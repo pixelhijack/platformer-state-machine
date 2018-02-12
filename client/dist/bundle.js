@@ -65,11 +65,11 @@
 	
 	var _game2 = _interopRequireDefault(_game);
 	
-	var _gameover = __webpack_require__(/*! ./gameover */ 7);
+	var _gameover = __webpack_require__(/*! ./gameover */ 8);
 	
 	var _gameover2 = _interopRequireDefault(_gameover);
 	
-	var _extendedsprite = __webpack_require__(/*! ./extendedsprite */ 8);
+	var _extendedsprite = __webpack_require__(/*! ./extendedsprite */ 9);
 	
 	var _extendedsprite2 = _interopRequireDefault(_extendedsprite);
 	
@@ -934,21 +934,42 @@
 	                this.dispatch('AN EVENT');
 	            }
 	            if (Math.random() < 0.001) {
-	                this.dispatch('ANOTHER EVENT');
+	                this.dispatch('BOOT:INIT');
+	            }
+	            if (Math.random() < 0.001) {
+	                this.dispatch('MENU:INIT');
+	            }
+	            if (Math.random() < 0.001) {
+	                this.dispatch('GAME:INIT', { time: new Date() });
+	            }
+	            if (Math.random() < 0.001) {
+	                this.dispatch('GAME:PRELOAD');
+	            }
+	            if (Math.random() < 0.001) {
+	                this.dispatch('GAME:CREATE');
 	            }
 	        }
 	    }, {
 	        key: 'subscribe',
-	        value: function subscribe(eventName, callback) {
+	        value: function subscribe(eventName, callback, priority, args) {
 	            if (!this.EVENTS[eventName]) {
 	                this.EVENTS[eventName] = new Phaser.Signal();
 	            };
-	            this.EVENTS[eventName].add(callback, this);
+	            this.EVENTS[eventName].add(callback, this, priority, args);
 	        }
 	    }, {
 	        key: 'dispatch',
-	        value: function dispatch(eventName) {
-	            this.EVENTS[eventName] && this.EVENTS[eventName].dispatch();
+	        value: function dispatch(eventName, args) {
+	            this.EVENTS[eventName] && this.EVENTS[eventName].dispatch(args);
+	        }
+	    }, {
+	        key: 'subscribeAll',
+	        value: function subscribeAll(eventMap) {
+	            var _this2 = this;
+	
+	            Object.keys(eventMap).forEach(function (eventName) {
+	                _this2.subscribe(eventName, eventMap[eventName]);
+	            });
 	        }
 	    }]);
 	
@@ -1038,6 +1059,8 @@
 	
 	var _gamestate2 = _interopRequireDefault(_gamestate);
 	
+	var _events = __webpack_require__(/*! ./events */ 7);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1052,31 +1075,26 @@
 	    function Game() {
 	        _classCallCheck(this, Game);
 	
-	        return _possibleConstructorReturn(this, (Game.__proto__ || Object.getPrototypeOf(Game)).call(this));
+	        var _this = _possibleConstructorReturn(this, (Game.__proto__ || Object.getPrototypeOf(Game)).call(this));
+	
+	        _this.subscribeAll(_events.gameEvents);
+	        return _this;
 	    }
 	
 	    _createClass(Game, [{
 	        key: 'init',
 	        value: function init(config) {
-	            var _this2 = this;
-	
 	            console.log('[GAME] init', config);
-	            this.subscribe('AN EVENT', function () {
-	                console.log('[AN EVENT] from init', _this2);
-	            });
+	
+	            // event params can be bound beforehand:
+	            this.subscribe('AN EVENT', function (config) {
+	                console.log('[AN EVENT] from init', config);
+	            }, null, config);
 	        }
 	    }, {
 	        key: 'preload',
 	        value: function preload() {
-	            var _this3 = this;
-	
 	            console.log('[GAME] preload');
-	            this.subscribe('AN EVENT', function () {
-	                console.log('[AN EVENT] from preload', _this3);
-	            });
-	            this.subscribe('ANOTHER EVENT', function () {
-	                console.log('[ANOTHER EVENT] from preload', _this3);
-	            });
 	        }
 	    }, {
 	        key: 'create',
@@ -1094,6 +1112,42 @@
 
 /***/ }),
 /* 7 */
+/*!******************************!*\
+  !*** ./client/src/events.js ***!
+  \******************************/
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var bootEvents = exports.bootEvents = {
+	    'BOOT:INIT': function BOOTINIT() {
+	        console.log('[BOOT:INIT]');
+	    }
+	};
+	
+	var menuEvents = exports.menuEvents = {
+	    'MENU:INIT': function MENUINIT() {
+	        console.log('[MENU:INIT]');
+	    }
+	};
+	
+	var gameEvents = exports.gameEvents = {
+	    'GAME:INIT': function GAMEINIT(initConfig) {
+	        console.log('[GAME:INIT]', initConfig);
+	    },
+	    'GAME:PRELOAD': function GAMEPRELOAD() {
+	        console.log('[GAME:PRELOAD]');
+	    },
+	    'GAME:CREATE': function GAMECREATE() {
+	        console.log('[GAME:CREATE]');
+	    }
+	};
+
+/***/ }),
+/* 8 */
 /*!********************************!*\
   !*** ./client/src/gameover.js ***!
   \********************************/
@@ -1134,7 +1188,7 @@
 	exports.default = GameOver;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /*!**************************************!*\
   !*** ./client/src/extendedsprite.js ***!
   \**************************************/
