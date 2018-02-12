@@ -1,5 +1,9 @@
-import GameState from './gamestate';
 import StateMachine from 'javascript-state-machine';
+
+import Boot from './boot';
+import Menu from './menu';
+import Game from './game';
+import GameOver from './gameover';
 
 const initConfig = {
     device: navigator.userAgent
@@ -33,10 +37,10 @@ const store = new StateMachine({
         onPlay: () => { console.log('[STATE] onPlay'); },
         onInitialize: (lifecycle, initConfig) => {
             console.log('[STATE] onPlay', lifecycle, initConfig);
-            store.game.state.add('Boot', GameState);
-            store.game.state.add('Menu', GameState);
-            store.game.state.add('Game', GameState);
-            store.game.state.add('GameOver', GameState);
+            store.game.state.add('Boot', Boot);
+            store.game.state.add('Menu', Menu);
+            store.game.state.add('Game', Game);
+            store.game.state.add('GameOver', GameOver);
             store.game.state.start('Game', true, true, initConfig);
         }
     }
