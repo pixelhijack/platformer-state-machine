@@ -4,6 +4,7 @@ import Boot from './boot';
 import Menu from './menu';
 import Game from './game';
 import GameOver from './gameover';
+import ExtendedSprite from './extendedsprite';
 
 const initConfig = {
     device: navigator.userAgent
