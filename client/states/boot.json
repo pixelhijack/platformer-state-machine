@@ -1,0 +1,9 @@
+{
+    "state": "boot",
+    "config": {},
+    "keys": {
+        "SPACEBAR": "GAME:INIT"
+    },
+    "events": {},
+    "entities": {}
+}

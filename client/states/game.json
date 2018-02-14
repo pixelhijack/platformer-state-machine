@@ -1,0 +1,12 @@
+{
+    "state": "boot",
+    "config": {},
+    "keys": {
+        "SPACEBAR": "PLAYER:HIT",
+        "UP": "PLAYER:JUMP",
+        "LEFT": "PLAYER:LEFT",
+        "RIGHT": "PLAYER:RIGHT"
+    },
+    "events": {},
+    "entities": {}
+}

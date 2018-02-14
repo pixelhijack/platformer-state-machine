@@ -65,32 +65,30 @@
 	
 	var _game2 = _interopRequireDefault(_game);
 	
-	var _gameover = __webpack_require__(/*! ./gameover */ 8);
+	var _gameover = __webpack_require__(/*! ./gameover */ 9);
 	
 	var _gameover2 = _interopRequireDefault(_gameover);
 	
-	var _extendedsprite = __webpack_require__(/*! ./extendedsprite */ 9);
+	var _gamestate = __webpack_require__(/*! ./gamestate */ 4);
+	
+	var _gamestate2 = _interopRequireDefault(_gamestate);
+	
+	var _extendedsprite = __webpack_require__(/*! ./extendedsprite */ 7);
 	
 	var _extendedsprite2 = _interopRequireDefault(_extendedsprite);
 	
+	var _config = __webpack_require__(/*! ./config */ 10);
+	
+	var _config2 = _interopRequireDefault(_config);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var initConfig = {
-	    device: navigator.userAgent
-	};
-	
-	var configs = {
-	    WIDTH: 1000,
-	    HEIGHT: 1000,
-	    DOM_ELEMENT: 'app'
-	};
+	var game = new Phaser.Game(_config2.default.width, _config2.default.height, Phaser.AUTO, _config2.default.domElement);
 	
 	var store = new _javascriptStateMachine2.default({
 	    init: 'boot',
 	    transitions: [{ name: 'initialize', from: 'boot', to: 'menu' }, { name: 'play', from: 'menu', to: 'game' }, { name: 'abandon', from: 'game', to: 'menu' }, { name: 'lose', from: 'game', to: 'menu' }],
-	    data: {
-	        game: new Phaser.Game(configs.WIDTH, configs.HEIGHT, Phaser.AUTO, configs.DOM_ELEMENT)
-	    },
+	    data: {},
 	    methods: {
 	        onAbandon: function onAbandon() {
 	            console.log('[STATE] onAbandon');
@@ -98,21 +96,57 @@
 	        onLose: function onLose() {
 	            console.log('[STATE] onLose');
 	        },
-	        onPlay: function onPlay() {
+	        onPlay: function onPlay(lifecycle, level) {
 	            console.log('[STATE] onPlay');
+	            game.state.start('Game', true, true, {
+	                config: _config2.default,
+	                keyboardEvents: {
+	                    'SPACE': 'PLAYER:HIT',
+	                    'ARROWUP': 'PLAYER:JUMP',
+	                    'ARROWDOWN': 'PLAYER:DUCK',
+	                    'ARROWLEFT': 'PLAYER:LEFT',
+	                    'ARROWRIGHT': 'PLAYER:RIGHT'
+	                },
+	                events: [{
+	                    eventType: 'PLAYER:HIT',
+	                    action: function action(event) {
+	                        console.log('this', undefined);
+	                    }
+	                }, {
+	                    eventType: 'PLAYER:JUMP',
+	                    action: function action(event) {}
+	                }, {
+	                    eventType: 'PLAYER:DUCK',
+	                    action: function action(event) {}
+	                }, {
+	                    eventType: 'PLAYER:LEFT',
+	                    action: function action(event) {}
+	                }, {
+	                    eventType: 'PLAYER:RIGHT',
+	                    action: function action(event) {}
+	                }]
+	            });
 	        },
-	        onInitialize: function onInitialize(lifecycle, initConfig) {
-	            console.log('[STATE] onPlay', lifecycle, initConfig);
-	            store.game.state.add('Boot', _boot2.default);
-	            store.game.state.add('Menu', _menu2.default);
-	            store.game.state.add('Game', _game2.default);
-	            store.game.state.add('GameOver', _gameover2.default);
-	            store.game.state.start('Game', true, true, initConfig);
+	        onInitialize: function onInitialize(lifecycle, config) {
+	            console.log('[STATE] onInitialize', lifecycle, config);
+	            game.state.add('Boot', _boot2.default);
+	            game.state.add('Menu', _menu2.default);
+	            game.state.add('Game', _game2.default);
+	            game.state.add('GameOver', _gamestate2.default);
+	            game.state.start('Menu', true, true, {
+	                config: config,
+	                keyboardEvents: {
+	                    'SPACE': 'GAME:START'
+	                },
+	                events: [{ eventType: 'GAME:START', action: function action() {
+	                        store.play();
+	                    } }]
+	            });
 	        }
 	    }
 	});
 	
-	store.initialize(initConfig);
+	store.initialize(_config2.default);
 
 /***/ }),
 /* 1 */
@@ -908,13 +942,20 @@
 	        var _this = _possibleConstructorReturn(this, (GameState.__proto__ || Object.getPrototypeOf(GameState)).call(this));
 	
 	        _this.EVENTS = {};
+	        _this.KEYS = {};
 	        return _this;
 	    }
 	
 	    _createClass(GameState, [{
 	        key: 'init',
-	        value: function init(config) {
-	            console.log('[GAMESTATE] init', config);
+	        value: function init(_ref) {
+	            var config = _ref.config,
+	                keyboardEvents = _ref.keyboardEvents,
+	                events = _ref.events;
+	
+	            console.log('[GAMESTATE] init', config, keyboardEvents, events);
+	            this.setupKeys(keyboardEvents);
+	            this.subscribeAll(events);
 	        }
 	    }, {
 	        key: 'preload',
@@ -934,41 +975,46 @@
 	                this.dispatch('AN EVENT');
 	            }
 	            if (Math.random() < 0.001) {
-	                this.dispatch('BOOT:INIT');
-	            }
-	            if (Math.random() < 0.001) {
-	                this.dispatch('MENU:INIT');
-	            }
-	            if (Math.random() < 0.001) {
 	                this.dispatch('GAME:INIT', { time: new Date() });
 	            }
-	            if (Math.random() < 0.001) {
-	                this.dispatch('GAME:PRELOAD');
-	            }
-	            if (Math.random() < 0.001) {
-	                this.dispatch('GAME:CREATE');
-	            }
+	        }
+	    }, {
+	        key: 'setupKeys',
+	        value: function setupKeys(keyboardEvents) {
+	            var _this2 = this;
+	
+	            this.KEYS = keyboardEvents;
+	            this.game.input.keyboard.onDownCallback = function (event) {
+	                if (_this2.KEYS[event.code.toUpperCase()]) {
+	                    _this2.dispatch(_this2.KEYS[event.code.toUpperCase()], event);
+	                }
+	            };
 	        }
 	    }, {
 	        key: 'subscribe',
-	        value: function subscribe(eventName, callback, priority, args) {
-	            if (!this.EVENTS[eventName]) {
-	                this.EVENTS[eventName] = new Phaser.Signal();
+	        value: function subscribe(eventType, action, priority, args) {
+	            if (!this.EVENTS[eventType]) {
+	                this.EVENTS[eventType] = new Phaser.Signal();
 	            };
-	            this.EVENTS[eventName].add(callback, this, priority, args);
+	            this.EVENTS[eventType].add(action, this, priority, args);
 	        }
 	    }, {
 	        key: 'dispatch',
-	        value: function dispatch(eventName, args) {
-	            this.EVENTS[eventName] && this.EVENTS[eventName].dispatch(args);
+	        value: function dispatch(eventType, args) {
+	            if (this.EVENTS[eventType]) {
+	                this.EVENTS[eventType].dispatch(args);
+	                console.log('[EVENTS] %s dispatched', eventType, args);
+	            } else {
+	                console.warn('[GameState.dispatch] %s eventType not found', eventType);
+	            };
 	        }
 	    }, {
 	        key: 'subscribeAll',
-	        value: function subscribeAll(eventMap) {
-	            var _this2 = this;
+	        value: function subscribeAll(events) {
+	            var _this3 = this;
 	
-	            Object.keys(eventMap).forEach(function (eventName) {
-	                _this2.subscribe(eventName, eventMap[eventName]);
+	            events.forEach(function (event) {
+	                _this3.subscribe(event.eventType, event.action);
 	            });
 	        }
 	    }]);
@@ -995,6 +1041,8 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+	
 	var _gamestate = __webpack_require__(/*! ./gamestate */ 4);
 	
 	var _gamestate2 = _interopRequireDefault(_gamestate);
@@ -1017,19 +1065,16 @@
 	    }
 	
 	    _createClass(Menu, [{
-	        key: 'init',
-	        value: function init(config) {
-	            console.log('[MENU] init', config);
-	        }
-	    }, {
 	        key: 'preload',
 	        value: function preload() {
 	            console.log('[MENU] preload');
+	            _get(Menu.prototype.__proto__ || Object.getPrototypeOf(Menu.prototype), 'preload', this).call(this);
 	        }
 	    }, {
 	        key: 'create',
 	        value: function create() {
 	            console.log('[MENU] create');
+	            _get(Menu.prototype.__proto__ || Object.getPrototypeOf(Menu.prototype), 'create', this).call(this);
 	        }
 	    }]);
 	
@@ -1055,11 +1100,19 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+	
 	var _gamestate = __webpack_require__(/*! ./gamestate */ 4);
 	
 	var _gamestate2 = _interopRequireDefault(_gamestate);
 	
-	var _events = __webpack_require__(/*! ./events */ 7);
+	var _extendedsprite = __webpack_require__(/*! ./extendedsprite */ 7);
+	
+	var _extendedsprite2 = _interopRequireDefault(_extendedsprite);
+	
+	var _creatureconfig = __webpack_require__(/*! ./creatureconfig */ 8);
+	
+	var _creatureconfig2 = _interopRequireDefault(_creatureconfig);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -1077,29 +1130,46 @@
 	
 	        var _this = _possibleConstructorReturn(this, (Game.__proto__ || Object.getPrototypeOf(Game)).call(this));
 	
-	        _this.subscribeAll(_events.gameEvents);
+	        _this.ENTITIES = {/*
+	                          'bear': [],
+	                          'dino': []
+	                          */};
+	        _this.PLAYER = undefined;
+	        _this.levelConfig = undefined;
+	        _this.creatureConfig = _creatureconfig2.default;
 	        return _this;
 	    }
 	
 	    _createClass(Game, [{
 	        key: 'init',
-	        value: function init(config) {
-	            console.log('[GAME] init', config);
+	        value: function init(level) {
+	            console.log('[GAME] init', level);
+	            _get(Game.prototype.__proto__ || Object.getPrototypeOf(Game.prototype), 'init', this).call(this, level);
+	
+	            this.levelConfig = level.config;
 	
 	            // event params can be bound beforehand:
-	            this.subscribe('AN EVENT', function (config) {
-	                console.log('[AN EVENT] from init', config);
-	            }, null, config);
+	            this.subscribe('AN EVENT', function (level) {
+	                console.log('[AN EVENT] from init', level);
+	            }, null, level);
 	        }
 	    }, {
 	        key: 'preload',
 	        value: function preload() {
 	            console.log('[GAME] preload');
+	            _get(Game.prototype.__proto__ || Object.getPrototypeOf(Game.prototype), 'preload', this).call(this);
+	            this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+	            this.game.scale.pageAlignHorizontally = true;
+	            this.game.scale.pageAlignVertically = true;
+	            this.game.load.atlas('pre2atlas', 'assets/pre2atlas.png', 'assets/pre2atlas.json', Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
 	        }
 	    }, {
 	        key: 'create',
 	        value: function create() {
 	            console.log('[GAME] create');
+	            _get(Game.prototype.__proto__ || Object.getPrototypeOf(Game.prototype), 'create', this).call(this);
+	
+	            this.PLAYER = new _extendedsprite2.default(this.game, this.levelConfig.entryPoint.x, this.levelConfig.entryPoint.y, this.levelConfig.textureAtlasName, this.creatureConfig.man);
 	        }
 	    }]);
 	
@@ -1112,9 +1182,9 @@
 
 /***/ }),
 /* 7 */
-/*!******************************!*\
-  !*** ./client/src/events.js ***!
-  \******************************/
+/*!**************************************!*\
+  !*** ./client/src/extendedsprite.js ***!
+  \**************************************/
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -1122,32 +1192,675 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	var bootEvents = exports.bootEvents = {
-	    'BOOT:INIT': function BOOTINIT() {
-	        console.log('[BOOT:INIT]');
-	    }
-	};
 	
-	var menuEvents = exports.menuEvents = {
-	    'MENU:INIT': function MENUINIT() {
-	        console.log('[MENU:INIT]');
-	    }
-	};
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var gameEvents = exports.gameEvents = {
-	    'GAME:INIT': function GAMEINIT(initConfig) {
-	        console.log('[GAME:INIT]', initConfig);
-	    },
-	    'GAME:PRELOAD': function GAMEPRELOAD() {
-	        console.log('[GAME:PRELOAD]');
-	    },
-	    'GAME:CREATE': function GAMECREATE() {
-	        console.log('[GAME:CREATE]');
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var ExtendedSprite = function (_Phaser$Sprite) {
+	    _inherits(ExtendedSprite, _Phaser$Sprite);
+	
+	    function ExtendedSprite(game, x, y, sprite, props) {
+	        _classCallCheck(this, ExtendedSprite);
+	
+	        var _this = _possibleConstructorReturn(this, (ExtendedSprite.__proto__ || Object.getPrototypeOf(ExtendedSprite)).call(this, game, x, y, sprite));
+	
+	        _this.props = props || { animations: [] };
+	
+	        _this.props.animations.forEach(function (animation) {
+	            _this.animations.add(animation.name, animation.frames.map(function (frame) {
+	                return frame.toString();
+	            }), animation.fps, animation.loop);
+	        });
+	        _this.game.add.existing(_this);
+	        _this.game.physics.enable(_this, Phaser.Physics.ARCADE);
+	        _this.body.gravity.y = _this.props.gravity;
+	        _this.anchor.setTo(0.5, 1);
+	        _this.body.collideWorldBounds = true;
+	        _this.checkWorldBounds = true;
+	        _this.outOfBoundsKill = true;
+	        return _this;
 	    }
-	};
+	
+	    _createClass(ExtendedSprite, [{
+	        key: 'update',
+	        value: function update() {
+	            this.animations.play('idle');
+	        }
+	    }]);
+	
+	    return ExtendedSprite;
+	}(Phaser.Sprite);
+	
+	;
+	
+	exports.default = ExtendedSprite;
 
 /***/ }),
 /* 8 */
+/*!**************************************!*\
+  !*** ./client/src/creatureconfig.js ***!
+  \**************************************/
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var creatureDefaults = {
+	    active: true,
+	    gravity: 500,
+	    bounce: 0.2,
+	    mass: 1,
+	    jumping: 300,
+	    maxSpeed: 100,
+	    acceleration: 10,
+	    collide: true,
+	    lives: 1,
+	    lifespan: Infinity,
+	    sense: 150,
+	    animations: [],
+	    timeOf: {
+	        'move': 200,
+	        'hit': 100,
+	        'hurt': 500,
+	        'stop': 200,
+	        'idle': 10
+	    },
+	    boundTo: {
+	        x1: 1000,
+	        x2: 1200
+	    },
+	    correctedAnchor: {
+	        x: 0.5,
+	        y: 0.5
+	    }
+	};
+	
+	var creatureConfigs = {
+	    man: {
+	        maxSpeed: 200,
+	        lives: 8,
+	        lifespan: Infinity,
+	        animations: [{
+	            name: 'move',
+	            frames: [11, '03', '05', 14, 20],
+	            fps: 10,
+	            loop: false
+	        }, {
+	            name: 'hit',
+	            frames: [22, 24, 28, 31, 34, 22, 24, 28, 31, 34],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'stop',
+	            frames: [42, 45, 49, 52],
+	            fps: 10,
+	            loop: false
+	        }, {
+	            name: 'jump',
+	            frames: [16, 41, 47, 50, 50, 50, 50, 50, 50, 50, 50, 13, 50, 13, 50, 13],
+	            fps: 10,
+	            loop: false
+	        }, {
+	            name: 'idle',
+	            frames: [25, 25, 25, 25, 25, 25, 25, 25, 27, 27, 27, 27, 25, 25, 25, 25, 25, 25, 25, 25, 30, 25, 25, 25, 25, 25, 25, 25, 25, 27, 30, 27, 30, 35, 36, 25, 25, 25, 25, 25, 25, 25, 25, '07', '07', '07', '07', '02', '02'],
+	            fps: 5,
+	            loop: true
+	        }, {
+	            name: 'hurt',
+	            frames: [19],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'stun',
+	            frames: [19],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'die',
+	            frames: [19],
+	            fps: 10,
+	            loop: false
+	        }, {
+	            name: 'spawn',
+	            frames: [11, '03', '05', 14, 20],
+	            fps: 10,
+	            loop: false
+	        }],
+	        correctedAnchor: {
+	            x: 0.5,
+	            y: 0.8
+	        }
+	    },
+	    dino: {
+	        mass: 1.5,
+	        jumping: 300,
+	        maxSpeed: 50,
+	        acceleration: 5,
+	        animations: [{
+	            name: 'idle',
+	            frames: [360, 360, 360, 360, 360, 360, 360, 367],
+	            fps: 5,
+	            loop: true
+	        }, {
+	            name: 'move',
+	            frames: [360, 361, 364, 367, 369],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'jump',
+	            frames: [360, 361, 364, 367, 369],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'fall',
+	            frames: [369],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'die',
+	            frames: [371],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'spawn',
+	            frames: [360, 361, 364, 367],
+	            fps: 10,
+	            loop: true
+	        }]
+	    },
+	    bear: {
+	        mass: 1.2,
+	        maxSpeed: 75,
+	        jumping: 0,
+	        acceleration: 15,
+	        animations: [{
+	            name: 'idle',
+	            frames: [321],
+	            fps: 10,
+	            loop: false
+	        }, {
+	            name: 'move',
+	            frames: [320, 321, 324],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'spawn',
+	            frames: [366, 363, 358, 317],
+	            fps: 10,
+	            loop: false
+	        }, {
+	            name: 'die',
+	            frames: [328],
+	            fps: 10,
+	            loop: true
+	        }]
+	    },
+	    'super-bear': {
+	        acceleration: 30,
+	        maxSpeed: 200,
+	        image: 'super-bear-sprite-ref', // override sprite (creature name by default)
+	        animations: []
+	    },
+	    tiger: {
+	        mass: 1.5,
+	        jumping: 300,
+	        maxSpeed: 50,
+	        acceleration: 20,
+	        animations: [{
+	            name: 'idle',
+	            frames: [393, 395],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'move',
+	            frames: [393, 395],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'jump',
+	            frames: [399, 401],
+	            fps: 10,
+	            loop: false
+	        }, {
+	            name: 'fall',
+	            frames: [399],
+	            fps: 10,
+	            loop: false
+	        }, {
+	            name: 'die',
+	            frames: [402],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'spawn',
+	            frames: [393, 395],
+	            fps: 10,
+	            loop: true
+	        }]
+	    },
+	    ptero: {
+	        mass: 0.5,
+	        gravity: 0,
+	        bounce: 0.1,
+	        jumping: 0,
+	        collide: false,
+	        maxSpeed: 10,
+	        acceleration: 10,
+	        animations: [{
+	            name: 'idle',
+	            frames: [478, 478, 478, 478, 478, 478, 478, 478, 477, 478, 478, 478, 478, 478, 477, 477],
+	            fps: 3,
+	            loop: true
+	        }, {
+	            name: 'move',
+	            frames: [403, 404, 405, 403, 404, 405, 405, 405, 405, 405, 405, 403, 404, 405, 403, 404, 405, 405, 405, 405, 405, 405, 405],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'descend',
+	            frames: [405],
+	            fps: 15,
+	            loop: true
+	        }, {
+	            name: 'ascend',
+	            frames: [403, 404, 405],
+	            fps: 15,
+	            loop: true
+	        }, {
+	            name: 'die',
+	            frames: [471],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'spawn',
+	            frames: [405, 403, 404],
+	            fps: 15,
+	            loop: true
+	        }]
+	    },
+	    dragonfly: {
+	        mass: 0.5,
+	        gravity: 0,
+	        bounce: 0.1,
+	        jumping: 0,
+	        collide: false,
+	        maxSpeed: 50,
+	        acceleration: 10,
+	        animations: [{
+	            name: 'idle',
+	            frames: [337, 338],
+	            fps: 12,
+	            loop: true
+	        }, {
+	            name: 'move',
+	            frames: [337, 338],
+	            fps: 12,
+	            loop: true
+	        }, {
+	            name: 'turn',
+	            frames: [339, 340],
+	            fps: 12,
+	            loop: true
+	        }, {
+	            name: 'die',
+	            frames: [342],
+	            fps: 12,
+	            loop: true
+	        }, {
+	            name: 'spawn',
+	            frames: [337, 338],
+	            fps: 12,
+	            loop: true
+	        }]
+	    },
+	    bat: {
+	        mass: 0.5,
+	        gravity: 0,
+	        bounce: 0.1,
+	        jumping: 0,
+	        collide: false,
+	        maxSpeed: 20,
+	        acceleration: 10,
+	        animations: [{
+	            name: 'idle',
+	            frames: [351, 352, 351, 351, 351, 351],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'move',
+	            frames: [357, 359],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'die',
+	            frames: [362],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'spawn',
+	            frames: [357, 359],
+	            fps: 10,
+	            loop: true
+	        }]
+	    },
+	    spider: {
+	        mass: 0.3,
+	        jumping: 0,
+	        collide: true,
+	        bounce: 0,
+	        maxSpeed: 50,
+	        acceleration: 10,
+	        animations: [{
+	            name: 'idle',
+	            frames: [335],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'spawn',
+	            frames: [365, 368, 370, 372],
+	            fps: 10,
+	            loop: false
+	        }, {
+	            name: 'move',
+	            frames: [299, 302, 305, 309],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'turn',
+	            frames: [319],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'climb',
+	            frames: [341, 343, 345, 347],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'wait',
+	            frames: [332, 335, 372],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'die',
+	            frames: [322],
+	            fps: 10,
+	            loop: false
+	        }]
+	    },
+	    native: {
+	        maxSpeed: 100,
+	        acceleration: 20,
+	        jumping: 0,
+	        animations: [{
+	            name: 'idle',
+	            frames: [373],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'move',
+	            frames: [373, 376, 378],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'die',
+	            frames: [380],
+	            fps: 10,
+	            loop: false
+	        }, {
+	            name: 'spawn',
+	            frames: [373, 376, 378],
+	            fps: 10,
+	            loop: true
+	        }]
+	    },
+	    parrot: {
+	        mass: 0.5,
+	        gravity: 0,
+	        bounce: 0.1,
+	        jumping: 0,
+	        collide: false,
+	        maxSpeed: 100,
+	        acceleration: 10,
+	        animations: [{
+	            name: 'idle',
+	            frames: [394, 397, 398],
+	            fps: 12,
+	            loop: true
+	        }, {
+	            name: 'move',
+	            frames: [394, 397, 398],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'die',
+	            frames: [400],
+	            fps: 10,
+	            loop: false
+	        }, {
+	            name: 'spawn',
+	            frames: [394, 397, 398],
+	            fps: 10,
+	            loop: true
+	        }]
+	    },
+	    insect: {
+	        mass: 1,
+	        collide: true,
+	        bounce: 1.5,
+	        jumping: 300,
+	        maxSpeed: 50,
+	        acceleration: 25,
+	        animations: [{
+	            name: 'idle',
+	            frames: [348, 348, 348, 348, 348, 348, 349],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'move',
+	            frames: [323, 348, 349],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'jump',
+	            frames: [323, 348, 349],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'die',
+	            frames: [348],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'spawn',
+	            frames: [323, 348, 349],
+	            fps: 10,
+	            loop: true
+	        }]
+	    },
+	    bug: {
+	        mass: 1,
+	        collide: true,
+	        bounce: 1.5,
+	        jumping: 300,
+	        maxSpeed: 50,
+	        acceleration: 25,
+	        animations: [{
+	            name: 'idle',
+	            frames: [344, 344, 344, 344, 344, 344, 344, 344, 346],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'move',
+	            frames: [344, 346],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'jump',
+	            frames: [344, 346],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'die',
+	            frames: [344],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'spawn',
+	            frames: [344, 346],
+	            fps: 10,
+	            loop: true
+	        }]
+	    },
+	    frog: {
+	        mass: 1,
+	        collide: true,
+	        bounce: 1.5,
+	        jumping: 500,
+	        maxSpeed: 80,
+	        acceleration: 40,
+	        animations: [{
+	            name: 'idle',
+	            frames: [325],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'move',
+	            frames: [325, 327, 331, 325],
+	            fps: 10,
+	            loop: false
+	        }, {
+	            name: 'jump',
+	            frames: [325, 327, 331, 325],
+	            fps: 10,
+	            loop: false
+	        }, {
+	            name: 'die',
+	            frames: [334],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'spawn',
+	            frames: [325, 327, 331, 325],
+	            fps: 10,
+	            loop: false
+	        }]
+	    },
+	    turtle: {
+	        mass: 2,
+	        jumping: 0,
+	        collide: true,
+	        bounce: 0.3,
+	        maxSpeed: 50,
+	        acceleration: 10,
+	        animations: [{
+	            name: 'idle',
+	            frames: [390],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'spawn',
+	            frames: [377, 381, 384, 385],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'move',
+	            frames: [387, 389, 390, 391],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'die',
+	            frames: [392],
+	            fps: 10,
+	            loop: true
+	        }]
+	    },
+	    jelly: {
+	        mass: 2,
+	        jumping: 0,
+	        collide: true,
+	        bounce: 1,
+	        maxSpeed: 5,
+	        acceleration: 1,
+	        animations: [{
+	            name: 'idle',
+	            frames: [420, 433, 434],
+	            fps: 3,
+	            loop: true
+	        }, {
+	            name: 'spawn',
+	            frames: [420, 433, 434],
+	            fps: 3,
+	            loop: true
+	        }, {
+	            name: 'move',
+	            frames: [420, 433, 434],
+	            fps: 3,
+	            loop: true
+	        }, {
+	            name: 'die',
+	            frames: [420, 433, 434],
+	            fps: 3,
+	            loop: true
+	        }]
+	    },
+	    gorilla: {
+	        mass: 5,
+	        jumping: 300,
+	        maxSpeed: 0,
+	        acceleration: 0,
+	        animations: [{
+	            name: 'idle',
+	            frames: [411],
+	            fps: 5,
+	            loop: true
+	        }, {
+	            name: 'move',
+	            frames: [411],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'jump',
+	            frames: [411],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'fall',
+	            frames: [411],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'die',
+	            frames: [411],
+	            fps: 10,
+	            loop: true
+	        }, {
+	            name: 'spawn',
+	            frames: [411],
+	            fps: 10,
+	            loop: true
+	        }]
+	    }
+	};
+	
+	for (var creature in creatureConfigs) {
+	    for (var prop in creatureDefaults) {
+	        if (creatureConfigs[creature][prop] === undefined) {
+	            creatureConfigs[creature][prop] = creatureDefaults[prop];
+	        }
+	    }
+	}
+	
+	exports.default = creatureConfigs;
+
+/***/ }),
+/* 9 */
 /*!********************************!*\
   !*** ./client/src/gameover.js ***!
   \********************************/
@@ -1188,39 +1901,36 @@
 	exports.default = GameOver;
 
 /***/ }),
-/* 9 */
-/*!**************************************!*\
-  !*** ./client/src/extendedsprite.js ***!
-  \**************************************/
+/* 10 */
+/*!******************************!*\
+  !*** ./client/src/config.js ***!
+  \******************************/
 /***/ (function(module, exports) {
 
-	"use strict";
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	var config = {
+	    entryPoint: {
+	        x: 100,
+	        y: 100
+	    },
+	    width: 546,
+	    height: 368,
+	    blocks: 3,
+	    domElement: 'app',
+	    backgroundPath: 'backgrounds/',
+	    tilesetPath: 'tilesets/',
+	    levelPath: 'levels/',
+	    textureAtlasPath: 'spritesheets/',
+	    textureAtlasName: 'pre2atlas',
+	    textureAtlasImage: 'pre2atlas.png',
+	    textureAtlasJson: 'pre2atlas.json'
+	};
 	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var ExtendedSprite = function (_Phaser$Sprite) {
-	    _inherits(ExtendedSprite, _Phaser$Sprite);
-	
-	    function ExtendedSprite(game, x, y, sprite) {
-	        _classCallCheck(this, ExtendedSprite);
-	
-	        return _possibleConstructorReturn(this, (ExtendedSprite.__proto__ || Object.getPrototypeOf(ExtendedSprite)).call(this, game, x, y, sprite));
-	    }
-	
-	    return ExtendedSprite;
-	}(Phaser.Sprite);
-	
-	;
-	
-	exports.default = ExtendedSprite;
+	exports.default = config;
 
 /***/ })
 /******/ ]);

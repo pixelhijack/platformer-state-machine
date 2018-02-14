@@ -2,9 +2,12 @@ class GameState extends Phaser.State {
     constructor() {
         super();
         this.EVENTS = {};
+        this.KEYS = {};
     }
-    init(config){
-        console.log('[GAMESTATE] init', config);
+    init({ config, keyboardEvents, events }){
+        console.log('[GAMESTATE] init', config, keyboardEvents, events);
+        this.setupKeys(keyboardEvents);
+        this.subscribeAll(events);
     }
     preload(){
         console.log('[GAMESTATE] preload');
@@ -15,24 +18,33 @@ class GameState extends Phaser.State {
     update(){
         console.log('[GAMESTATE] update');
         if(Math.random() < 0.001){ this.dispatch('AN EVENT'); }
-        if(Math.random() < 0.001){ this.dispatch('BOOT:INIT'); }
-        if(Math.random() < 0.001){ this.dispatch('MENU:INIT'); }
         if(Math.random() < 0.001){ this.dispatch('GAME:INIT', { time: new Date() }); }
-        if(Math.random() < 0.001){ this.dispatch('GAME:PRELOAD'); }
-        if(Math.random() < 0.001){ this.dispatch('GAME:CREATE'); }
     }
-    subscribe(eventName, callback, priority, args){
-        if(!this.EVENTS[eventName]){
-            this.EVENTS[eventName] = new Phaser.Signal();
+    setupKeys(keyboardEvents){
+        this.KEYS = keyboardEvents;
+        this.game.input.keyboard.onDownCallback = (event) => {
+            if(this.KEYS[event.code.toUpperCase()]){
+                this.dispatch(this.KEYS[event.code.toUpperCase()], event);
+            }
         };
-        this.EVENTS[eventName].add(callback, this, priority, args);
     }
-    dispatch(eventName, args){
-        this.EVENTS[eventName] && this.EVENTS[eventName].dispatch(args);
+    subscribe(eventType, action, priority, args){
+        if(!this.EVENTS[eventType]){
+            this.EVENTS[eventType] = new Phaser.Signal();
+        };
+        this.EVENTS[eventType].add(action, this, priority, args);
     }
-    subscribeAll(eventMap){
-        Object.keys(eventMap).forEach(eventName => {
-            this.subscribe(eventName, eventMap[eventName]);
+    dispatch(eventType, args){
+        if(this.EVENTS[eventType]){
+            this.EVENTS[eventType].dispatch(args);
+            console.log('[EVENTS] %s dispatched', eventType, args);
+        } else {
+            console.warn('[GameState.dispatch] %s eventType not found', eventType);
+        };
+    }
+    subscribeAll(events){
+        events.forEach(event => {
+            this.subscribe(event.eventType, event.action);
         });
     }
 };

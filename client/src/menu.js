@@ -4,14 +4,13 @@ class Menu extends GameState {
     constructor() {
         super();
     }
-    init(config){
-        console.log('[MENU] init', config);
-    }
     preload(){
         console.log('[MENU] preload');
+        super.preload();
     }
     create(){
         console.log('[MENU] create');
+        super.create();
     }
 };
 
