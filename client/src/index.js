@@ -42,22 +42,41 @@ const store = new StateMachine({
                 },
                 events: [
                     {
+                        eventType: 'GAME:ABANDON',
+                        action: function() {
+                            store.abandon();
+                        }
+                    },{
+                        eventType: 'GAME:OVER',
+                        action: function() {
+                            store.lose();
+                        }
+                    },{
                         eventType: 'PLAYER:HIT',
-                        action: (event) => {
+                        action: function(event) {
                             console.log('this', this)
+                            this.PLAYER.hit();
                         }
                     },{
                         eventType: 'PLAYER:JUMP',
-                        action: (event) => {}
+                        action: function(event) {
+                            this.PLAYER.jump();
+                        }
                     },{
                         eventType: 'PLAYER:DUCK',
-                        action: (event) => {}
+                        action: function(event) {
+                            this.PLAYER.duck();
+                        }
                     },{
                         eventType: 'PLAYER:LEFT',
-                        action: (event) => {}
+                        action: function(event) {
+                            this.PLAYER.moveLeft();
+                        }
                     },{
                         eventType: 'PLAYER:RIGHT',
-                        action: (event) => {}
+                        action: function(event) {
+                            this.PLAYER.moveRight();
+                        }
                     }
                 ]
             });
@@ -74,7 +93,7 @@ const store = new StateMachine({
                     'SPACE': 'GAME:START'
                 },
                 events: [
-                    { eventType: 'GAME:START', action: () => { store.play()} }
+                    { eventType: 'GAME:START', action: function() { store.play()} }
                 ]
             });
         }

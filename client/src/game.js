@@ -1,5 +1,5 @@
 import GameState from './gamestate';
-import ExtendedSprite from './extendedsprite';
+import Man from './man';
 import creatureConfig from './creatureconfig';
 
 class Game extends GameState {
@@ -41,7 +41,7 @@ class Game extends GameState {
         console.log('[GAME] create');
         super.create();
 
-        this.PLAYER = new ExtendedSprite(
+        this.PLAYER = new Man(
             this.game,
             this.levelConfig.entryPoint.x,
             this.levelConfig.entryPoint.y,

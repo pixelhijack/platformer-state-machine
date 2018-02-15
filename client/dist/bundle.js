@@ -108,22 +108,41 @@
 	                    'ARROWRIGHT': 'PLAYER:RIGHT'
 	                },
 	                events: [{
+	                    eventType: 'GAME:ABANDON',
+	                    action: function action() {
+	                        store.abandon();
+	                    }
+	                }, {
+	                    eventType: 'GAME:OVER',
+	                    action: function action() {
+	                        store.lose();
+	                    }
+	                }, {
 	                    eventType: 'PLAYER:HIT',
 	                    action: function action(event) {
-	                        console.log('this', undefined);
+	                        console.log('this', this);
+	                        this.PLAYER.hit();
 	                    }
 	                }, {
 	                    eventType: 'PLAYER:JUMP',
-	                    action: function action(event) {}
+	                    action: function action(event) {
+	                        this.PLAYER.jump();
+	                    }
 	                }, {
 	                    eventType: 'PLAYER:DUCK',
-	                    action: function action(event) {}
+	                    action: function action(event) {
+	                        this.PLAYER.duck();
+	                    }
 	                }, {
 	                    eventType: 'PLAYER:LEFT',
-	                    action: function action(event) {}
+	                    action: function action(event) {
+	                        this.PLAYER.moveLeft();
+	                    }
 	                }, {
 	                    eventType: 'PLAYER:RIGHT',
-	                    action: function action(event) {}
+	                    action: function action(event) {
+	                        this.PLAYER.moveRight();
+	                    }
 	                }]
 	            });
 	        },
@@ -1106,9 +1125,9 @@
 	
 	var _gamestate2 = _interopRequireDefault(_gamestate);
 	
-	var _extendedsprite = __webpack_require__(/*! ./extendedsprite */ 7);
+	var _man = __webpack_require__(/*! ./man */ 11);
 	
-	var _extendedsprite2 = _interopRequireDefault(_extendedsprite);
+	var _man2 = _interopRequireDefault(_man);
 	
 	var _creatureconfig = __webpack_require__(/*! ./creatureconfig */ 8);
 	
@@ -1169,7 +1188,7 @@
 	            console.log('[GAME] create');
 	            _get(Game.prototype.__proto__ || Object.getPrototypeOf(Game.prototype), 'create', this).call(this);
 	
-	            this.PLAYER = new _extendedsprite2.default(this.game, this.levelConfig.entryPoint.x, this.levelConfig.entryPoint.y, this.levelConfig.textureAtlasName, this.creatureConfig.man);
+	            this.PLAYER = new _man2.default(this.game, this.levelConfig.entryPoint.x, this.levelConfig.entryPoint.y, this.levelConfig.textureAtlasName, this.creatureConfig.man);
 	        }
 	    }]);
 	
@@ -1931,6 +1950,63 @@
 	};
 	
 	exports.default = config;
+
+/***/ }),
+/* 11 */
+/*!***************************!*\
+  !*** ./client/src/man.js ***!
+  \***************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _extendedsprite = __webpack_require__(/*! ./extendedsprite */ 7);
+	
+	var _extendedsprite2 = _interopRequireDefault(_extendedsprite);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Man = function (_ExtendedSprite) {
+	    _inherits(Man, _ExtendedSprite);
+	
+	    function Man(game, x, y, sprite, props) {
+	        _classCallCheck(this, Man);
+	
+	        return _possibleConstructorReturn(this, (Man.__proto__ || Object.getPrototypeOf(Man)).call(this, game, x, y, sprite));
+	    }
+	
+	    _createClass(Man, [{
+	        key: 'hit',
+	        value: function hit() {}
+	    }, {
+	        key: 'jump',
+	        value: function jump() {}
+	    }, {
+	        key: 'moveLeft',
+	        value: function moveLeft() {}
+	    }, {
+	        key: 'moveRight',
+	        value: function moveRight() {}
+	    }]);
+	
+	    return Man;
+	}(_extendedsprite2.default);
+	
+	;
+	
+	exports.default = _extendedsprite2.default;
 
 /***/ })
 /******/ ]);

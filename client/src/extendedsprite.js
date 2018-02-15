@@ -2,7 +2,7 @@ class ExtendedSprite extends Phaser.Sprite {
     constructor(game, x, y, sprite, props) {
         super(game, x, y, sprite);
         this.props = props || { animations: [] };
-        
+
         this.props.animations.forEach(animation => {
             this.animations.add(
                 animation.name,
