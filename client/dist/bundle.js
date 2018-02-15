@@ -65,7 +65,7 @@
 	
 	var _game2 = _interopRequireDefault(_game);
 	
-	var _gameover = __webpack_require__(/*! ./gameover */ 9);
+	var _gameover = __webpack_require__(/*! ./gameover */ 10);
 	
 	var _gameover2 = _interopRequireDefault(_gameover);
 	
@@ -73,11 +73,11 @@
 	
 	var _gamestate2 = _interopRequireDefault(_gamestate);
 	
-	var _extendedsprite = __webpack_require__(/*! ./extendedsprite */ 7);
+	var _extendedsprite = __webpack_require__(/*! ./extendedsprite */ 8);
 	
 	var _extendedsprite2 = _interopRequireDefault(_extendedsprite);
 	
-	var _config = __webpack_require__(/*! ./config */ 10);
+	var _config = __webpack_require__(/*! ./config */ 11);
 	
 	var _config2 = _interopRequireDefault(_config);
 	
@@ -108,38 +108,38 @@
 	                    'ARROWRIGHT': 'PLAYER:RIGHT'
 	                },
 	                events: [{
-	                    eventType: 'GAME:ABANDON',
+	                    type: 'GAME:ABANDON',
 	                    action: function action() {
 	                        store.abandon();
 	                    }
 	                }, {
-	                    eventType: 'GAME:OVER',
+	                    type: 'GAME:OVER',
 	                    action: function action() {
 	                        store.lose();
 	                    }
 	                }, {
-	                    eventType: 'PLAYER:HIT',
+	                    type: 'PLAYER:HIT',
 	                    action: function action(event) {
 	                        console.log('this', this);
 	                        this.PLAYER.hit();
 	                    }
 	                }, {
-	                    eventType: 'PLAYER:JUMP',
+	                    type: 'PLAYER:JUMP',
 	                    action: function action(event) {
 	                        this.PLAYER.jump();
 	                    }
 	                }, {
-	                    eventType: 'PLAYER:DUCK',
+	                    type: 'PLAYER:DUCK',
 	                    action: function action(event) {
 	                        this.PLAYER.duck();
 	                    }
 	                }, {
-	                    eventType: 'PLAYER:LEFT',
+	                    type: 'PLAYER:LEFT',
 	                    action: function action(event) {
 	                        this.PLAYER.moveLeft();
 	                    }
 	                }, {
-	                    eventType: 'PLAYER:RIGHT',
+	                    type: 'PLAYER:RIGHT',
 	                    action: function action(event) {
 	                        this.PLAYER.moveRight();
 	                    }
@@ -157,7 +157,7 @@
 	                keyboardEvents: {
 	                    'SPACE': 'GAME:START'
 	                },
-	                events: [{ eventType: 'GAME:START', action: function action() {
+	                events: [{ type: 'GAME:START', action: function action() {
 	                        store.play();
 	                    } }]
 	            });
@@ -972,24 +972,24 @@
 	                keyboardEvents = _ref.keyboardEvents,
 	                events = _ref.events;
 	
-	            console.log('[GAMESTATE] init', config, keyboardEvents, events);
+	            console.log('[ GAMESTATE ] init', config, keyboardEvents, events);
 	            this.setupKeys(keyboardEvents);
 	            this.subscribeAll(events);
 	        }
 	    }, {
 	        key: 'preload',
 	        value: function preload() {
-	            console.log('[GAMESTATE] preload');
+	            console.log('[ GAMESTATE ] preload');
 	        }
 	    }, {
 	        key: 'create',
 	        value: function create() {
-	            console.log('[GAMESTATE] create');
+	            console.log('[ GAMESTATE ] create');
 	        }
 	    }, {
 	        key: 'update',
 	        value: function update() {
-	            console.log('[GAMESTATE] update');
+	            console.log('[ GAMESTATE ] update');
 	            if (Math.random() < 0.001) {
 	                this.dispatch('AN EVENT');
 	            }
@@ -1011,20 +1011,20 @@
 	        }
 	    }, {
 	        key: 'subscribe',
-	        value: function subscribe(eventType, action, priority, args) {
-	            if (!this.EVENTS[eventType]) {
-	                this.EVENTS[eventType] = new Phaser.Signal();
+	        value: function subscribe(type, action, priority, args) {
+	            if (!this.EVENTS[type]) {
+	                this.EVENTS[type] = new Phaser.Signal();
 	            };
-	            this.EVENTS[eventType].add(action, this, priority, args);
+	            this.EVENTS[type].add(action, this, priority, args);
 	        }
 	    }, {
 	        key: 'dispatch',
-	        value: function dispatch(eventType, args) {
-	            if (this.EVENTS[eventType]) {
-	                this.EVENTS[eventType].dispatch(args);
-	                console.log('[EVENTS] %s dispatched', eventType, args);
+	        value: function dispatch(type, args) {
+	            if (this.EVENTS[type]) {
+	                this.EVENTS[type].dispatch(args);
+	                console.log('[ EVENTS ] %s dispatched', type, args);
 	            } else {
-	                console.warn('[GameState.dispatch] %s eventType not found', eventType);
+	                console.warn('[ GameState.dispatch ] %s type not found', type);
 	            };
 	        }
 	    }, {
@@ -1033,7 +1033,7 @@
 	            var _this3 = this;
 	
 	            events.forEach(function (event) {
-	                _this3.subscribe(event.eventType, event.action);
+	                _this3.subscribe(event.type, event.action);
 	            });
 	        }
 	    }]);
@@ -1125,11 +1125,11 @@
 	
 	var _gamestate2 = _interopRequireDefault(_gamestate);
 	
-	var _man = __webpack_require__(/*! ./man */ 11);
+	var _man = __webpack_require__(/*! ./man */ 7);
 	
 	var _man2 = _interopRequireDefault(_man);
 	
-	var _creatureconfig = __webpack_require__(/*! ./creatureconfig */ 8);
+	var _creatureconfig = __webpack_require__(/*! ./creatureconfig */ 9);
 	
 	var _creatureconfig2 = _interopRequireDefault(_creatureconfig);
 	
@@ -1162,20 +1162,20 @@
 	    _createClass(Game, [{
 	        key: 'init',
 	        value: function init(level) {
-	            console.log('[GAME] init', level);
+	            console.log('[ GAME ] init', level);
 	            _get(Game.prototype.__proto__ || Object.getPrototypeOf(Game.prototype), 'init', this).call(this, level);
 	
 	            this.levelConfig = level.config;
 	
 	            // event params can be bound beforehand:
 	            this.subscribe('AN EVENT', function (level) {
-	                console.log('[AN EVENT] from init', level);
+	                console.log('[ AN EVENT ] from init', level);
 	            }, null, level);
 	        }
 	    }, {
 	        key: 'preload',
 	        value: function preload() {
-	            console.log('[GAME] preload');
+	            console.log('[ GAME ] preload');
 	            _get(Game.prototype.__proto__ || Object.getPrototypeOf(Game.prototype), 'preload', this).call(this);
 	            this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 	            this.game.scale.pageAlignHorizontally = true;
@@ -1185,7 +1185,7 @@
 	    }, {
 	        key: 'create',
 	        value: function create() {
-	            console.log('[GAME] create');
+	            console.log('[ GAME ] create');
 	            _get(Game.prototype.__proto__ || Object.getPrototypeOf(Game.prototype), 'create', this).call(this);
 	
 	            this.PLAYER = new _man2.default(this.game, this.levelConfig.entryPoint.x, this.levelConfig.entryPoint.y, this.levelConfig.textureAtlasName, this.creatureConfig.man);
@@ -1201,6 +1201,93 @@
 
 /***/ }),
 /* 7 */
+/*!***************************!*\
+  !*** ./client/src/man.js ***!
+  \***************************/
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+	
+	var _extendedsprite = __webpack_require__(/*! ./extendedsprite */ 8);
+	
+	var _extendedsprite2 = _interopRequireDefault(_extendedsprite);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Man = function (_ExtendedSprite) {
+	    _inherits(Man, _ExtendedSprite);
+	
+	    function Man(game, x, y, sprite, props) {
+	        _classCallCheck(this, Man);
+	
+	        return _possibleConstructorReturn(this, (Man.__proto__ || Object.getPrototypeOf(Man)).call(this, game, x, y, sprite, props));
+	    }
+	
+	    _createClass(Man, [{
+	        key: 'preload',
+	        value: function preload() {
+	            _get(Man.prototype.__proto__ || Object.getPrototypeOf(Man.prototype), 'preload', this).call(this);
+	        }
+	    }, {
+	        key: 'create',
+	        value: function create() {
+	            _get(Man.prototype.__proto__ || Object.getPrototypeOf(Man.prototype), 'create', this).call(this);
+	        }
+	    }, {
+	        key: 'update',
+	        value: function update() {
+	            _get(Man.prototype.__proto__ || Object.getPrototypeOf(Man.prototype), 'update', this).call(this);
+	        }
+	    }, {
+	        key: 'hit',
+	        value: function hit() {
+	            console.log('[ MAN ] hit');
+	        }
+	    }, {
+	        key: 'jump',
+	        value: function jump() {
+	            console.log('[ MAN ] jump');
+	        }
+	    }, {
+	        key: 'duck',
+	        value: function duck() {
+	            console.log('[ MAN ] duck');
+	        }
+	    }, {
+	        key: 'moveLeft',
+	        value: function moveLeft() {
+	            console.log('[ MAN ] moveLeft');
+	        }
+	    }, {
+	        key: 'moveRight',
+	        value: function moveRight() {
+	            console.log('[MAN] moveRight');
+	        }
+	    }]);
+	
+	    return Man;
+	}(_extendedsprite2.default);
+	
+	;
+	
+	exports.default = Man;
+
+/***/ }),
+/* 8 */
 /*!**************************************!*\
   !*** ./client/src/extendedsprite.js ***!
   \**************************************/
@@ -1260,7 +1347,7 @@
 	exports.default = ExtendedSprite;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /*!**************************************!*\
   !*** ./client/src/creatureconfig.js ***!
   \**************************************/
@@ -1879,7 +1966,7 @@
 	exports.default = creatureConfigs;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /*!********************************!*\
   !*** ./client/src/gameover.js ***!
   \********************************/
@@ -1920,7 +2007,7 @@
 	exports.default = GameOver;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /*!******************************!*\
   !*** ./client/src/config.js ***!
   \******************************/
@@ -1950,63 +2037,6 @@
 	};
 	
 	exports.default = config;
-
-/***/ }),
-/* 11 */
-/*!***************************!*\
-  !*** ./client/src/man.js ***!
-  \***************************/
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	var _extendedsprite = __webpack_require__(/*! ./extendedsprite */ 7);
-	
-	var _extendedsprite2 = _interopRequireDefault(_extendedsprite);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var Man = function (_ExtendedSprite) {
-	    _inherits(Man, _ExtendedSprite);
-	
-	    function Man(game, x, y, sprite, props) {
-	        _classCallCheck(this, Man);
-	
-	        return _possibleConstructorReturn(this, (Man.__proto__ || Object.getPrototypeOf(Man)).call(this, game, x, y, sprite));
-	    }
-	
-	    _createClass(Man, [{
-	        key: 'hit',
-	        value: function hit() {}
-	    }, {
-	        key: 'jump',
-	        value: function jump() {}
-	    }, {
-	        key: 'moveLeft',
-	        value: function moveLeft() {}
-	    }, {
-	        key: 'moveRight',
-	        value: function moveRight() {}
-	    }]);
-	
-	    return Man;
-	}(_extendedsprite2.default);
-	
-	;
-	
-	exports.default = _extendedsprite2.default;
 
 /***/ })
 /******/ ]);

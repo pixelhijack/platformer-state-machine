@@ -5,18 +5,18 @@ class GameState extends Phaser.State {
         this.KEYS = {};
     }
     init({ config, keyboardEvents, events }){
-        console.log('[GAMESTATE] init', config, keyboardEvents, events);
+        console.log('[ GAMESTATE ] init', config, keyboardEvents, events);
         this.setupKeys(keyboardEvents);
         this.subscribeAll(events);
     }
     preload(){
-        console.log('[GAMESTATE] preload');
+        console.log('[ GAMESTATE ] preload');
     }
     create(){
-        console.log('[GAMESTATE] create');
+        console.log('[ GAMESTATE ] create');
     }
     update(){
-        console.log('[GAMESTATE] update');
+        console.log('[ GAMESTATE ] update');
         if(Math.random() < 0.001){ this.dispatch('AN EVENT'); }
         if(Math.random() < 0.001){ this.dispatch('GAME:INIT', { time: new Date() }); }
     }
@@ -28,23 +28,23 @@ class GameState extends Phaser.State {
             }
         };
     }
-    subscribe(eventType, action, priority, args){
-        if(!this.EVENTS[eventType]){
-            this.EVENTS[eventType] = new Phaser.Signal();
+    subscribe(type, action, priority, args){
+        if(!this.EVENTS[type]){
+            this.EVENTS[type] = new Phaser.Signal();
         };
-        this.EVENTS[eventType].add(action, this, priority, args);
+        this.EVENTS[type].add(action, this, priority, args);
     }
-    dispatch(eventType, args){
-        if(this.EVENTS[eventType]){
-            this.EVENTS[eventType].dispatch(args);
-            console.log('[EVENTS] %s dispatched', eventType, args);
+    dispatch(type, args){
+        if(this.EVENTS[type]){
+            this.EVENTS[type].dispatch(args);
+            console.log('[ EVENTS ] %s dispatched', type, args);
         } else {
-            console.warn('[GameState.dispatch] %s eventType not found', eventType);
+            console.warn('[ GameState.dispatch ] %s type not found', type);
         };
     }
     subscribeAll(events){
         events.forEach(event => {
-            this.subscribe(event.eventType, event.action);
+            this.subscribe(event.type, event.action);
         });
     }
 };

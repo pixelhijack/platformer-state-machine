@@ -42,38 +42,38 @@ const store = new StateMachine({
                 },
                 events: [
                     {
-                        eventType: 'GAME:ABANDON',
+                        type: 'GAME:ABANDON',
                         action: function() {
                             store.abandon();
                         }
                     },{
-                        eventType: 'GAME:OVER',
+                        type: 'GAME:OVER',
                         action: function() {
                             store.lose();
                         }
                     },{
-                        eventType: 'PLAYER:HIT',
+                        type: 'PLAYER:HIT',
                         action: function(event) {
                             console.log('this', this)
                             this.PLAYER.hit();
                         }
                     },{
-                        eventType: 'PLAYER:JUMP',
+                        type: 'PLAYER:JUMP',
                         action: function(event) {
                             this.PLAYER.jump();
                         }
                     },{
-                        eventType: 'PLAYER:DUCK',
+                        type: 'PLAYER:DUCK',
                         action: function(event) {
                             this.PLAYER.duck();
                         }
                     },{
-                        eventType: 'PLAYER:LEFT',
+                        type: 'PLAYER:LEFT',
                         action: function(event) {
                             this.PLAYER.moveLeft();
                         }
                     },{
-                        eventType: 'PLAYER:RIGHT',
+                        type: 'PLAYER:RIGHT',
                         action: function(event) {
                             this.PLAYER.moveRight();
                         }
@@ -93,7 +93,7 @@ const store = new StateMachine({
                     'SPACE': 'GAME:START'
                 },
                 events: [
-                    { eventType: 'GAME:START', action: function() { store.play()} }
+                    { type: 'GAME:START', action: function() { store.play()} }
                 ]
             });
         }

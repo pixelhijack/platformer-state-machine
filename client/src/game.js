@@ -14,18 +14,18 @@ class Game extends GameState {
         this.creatureConfig = creatureConfig;
     }
     init(level){
-        console.log('[GAME] init', level);
+        console.log('[ GAME ] init', level);
         super.init(level);
 
         this.levelConfig = level.config;
 
         // event params can be bound beforehand:
         this.subscribe('AN EVENT', (level) => {
-            console.log('[AN EVENT] from init', level);
+            console.log('[ AN EVENT ] from init', level);
         }, null, level);
     }
     preload(){
-        console.log('[GAME] preload');
+        console.log('[ GAME ] preload');
         super.preload();
         this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         this.game.scale.pageAlignHorizontally = true;
@@ -38,7 +38,7 @@ class Game extends GameState {
         );
     }
     create(){
-        console.log('[GAME] create');
+        console.log('[ GAME ] create');
         super.create();
 
         this.PLAYER = new Man(
