@@ -1,7 +1,47 @@
+import StateMachine from 'javascript-state-machine';
+
 class ExtendedSprite extends Phaser.Sprite {
     constructor(game, x, y, sprite, props) {
         super(game, x, y, sprite);
         this.props = props || { animations: [] };
+
+        this.states = new StateMachine({
+            init: 'unborn',
+            transitions: [
+                { 
+                    name: 'spawn', 
+                    from: 'unborn', 
+                    to: 'idle' 
+                },
+                { 
+                    name: 'move', 
+                    from: ['idle', 'move'], 
+                    to: 'move' 
+                },
+                { 
+                    name: 'hurt', 
+                    from: ['idle', 'move', 'hit'], 
+                    to: 'hurt' 
+                },
+                { 
+                    name: 'stop', 
+                    from: '', 
+                    to: '' 
+                },
+                { 
+                    name: 'jump', 
+                    from: ['idle', 'move', 'hit'], 
+                    to: '' 
+                },
+                { 
+                    name: 'die', 
+                    from: '*', 
+                    to: 'dead' 
+                }
+            ],
+            data: {},
+            methods: []
+        });
 
         this.props.animations.forEach(animation => {
             this.animations.add(
@@ -18,9 +58,11 @@ class ExtendedSprite extends Phaser.Sprite {
         this.body.collideWorldBounds = true;
         this.checkWorldBounds = true;
         this.outOfBoundsKill = true;
+
+        this.states.spawn();
     }
     update(){
-        this.animations.play('idle');
+        this.animations.play(this.states.state);
     }
 };
 

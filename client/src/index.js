@@ -8,6 +8,17 @@ import GameState from './gamestate';
 import ExtendedSprite from './extendedsprite';
 import config from './config';
 
+const events = [
+    {
+        event: 'PLAYER:MOVE',
+        action: (state, props) => {
+            state.player.x += props.velocity
+        }
+    },{
+
+    }
+];
+
 const game = new Phaser.Game(
     config.width,
     config.height,
@@ -54,7 +65,6 @@ const store = new StateMachine({
                     },{
                         type: 'PLAYER:HIT',
                         action: function(event) {
-                            console.log('this', this)
                             this.PLAYER.hit();
                         }
                     },{

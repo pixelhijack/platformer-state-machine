@@ -120,7 +120,6 @@
 	                }, {
 	                    type: 'PLAYER:HIT',
 	                    action: function action(event) {
-	                        console.log('this', this);
 	                        this.PLAYER.hit();
 	                    }
 	                }, {
@@ -1268,14 +1267,29 @@
 	            console.log('[ MAN ] duck');
 	        }
 	    }, {
+	        key: 'stop',
+	        value: function stop() {
+	            this.body.velocity.x /= 1.1;
+	        }
+	    }, {
 	        key: 'moveLeft',
 	        value: function moveLeft() {
 	            console.log('[ MAN ] moveLeft');
+	            this.scale.x = -1;
+	            if (this.body.velocity.x > -this.props.maxSpeed) {
+	                this.body.velocity.x -= this.props.acceleration;
+	            };
+	            this.states.move();
 	        }
 	    }, {
 	        key: 'moveRight',
 	        value: function moveRight() {
 	            console.log('[MAN] moveRight');
+	            this.scale.x = 1;
+	            if (this.body.velocity.x < this.props.maxSpeed) {
+	                this.body.velocity.x += this.props.acceleration;
+	            }
+	            this.states.move();
 	        }
 	    }]);
 	
@@ -1291,7 +1305,7 @@
 /*!**************************************!*\
   !*** ./client/src/extendedsprite.js ***!
   \**************************************/
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -1300,6 +1314,12 @@
 	});
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _javascriptStateMachine = __webpack_require__(/*! javascript-state-machine */ 1);
+	
+	var _javascriptStateMachine2 = _interopRequireDefault(_javascriptStateMachine);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -1317,6 +1337,37 @@
 	
 	        _this.props = props || { animations: [] };
 	
+	        _this.states = new _javascriptStateMachine2.default({
+	            init: 'unborn',
+	            transitions: [{
+	                name: 'spawn',
+	                from: 'unborn',
+	                to: 'idle'
+	            }, {
+	                name: 'move',
+	                from: ['idle', 'move'],
+	                to: 'move'
+	            }, {
+	                name: 'hurt',
+	                from: ['idle', 'move', 'hit'],
+	                to: 'hurt'
+	            }, {
+	                name: 'stop',
+	                from: '',
+	                to: ''
+	            }, {
+	                name: 'jump',
+	                from: ['idle', 'move', 'hit'],
+	                to: ''
+	            }, {
+	                name: 'die',
+	                from: '*',
+	                to: 'dead'
+	            }],
+	            data: {},
+	            methods: []
+	        });
+	
 	        _this.props.animations.forEach(function (animation) {
 	            _this.animations.add(animation.name, animation.frames.map(function (frame) {
 	                return frame.toString();
@@ -1329,13 +1380,15 @@
 	        _this.body.collideWorldBounds = true;
 	        _this.checkWorldBounds = true;
 	        _this.outOfBoundsKill = true;
+	
+	        _this.states.spawn();
 	        return _this;
 	    }
 	
 	    _createClass(ExtendedSprite, [{
 	        key: 'update',
 	        value: function update() {
-	            this.animations.play('idle');
+	            this.animations.play(this.states.state);
 	        }
 	    }]);
 	

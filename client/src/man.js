@@ -22,11 +22,24 @@ class Man extends ExtendedSprite {
     duck(){
         console.log('[ MAN ] duck');
     }
+    stop(){
+        this.body.velocity.x /= 1.1;
+    }
     moveLeft(){
         console.log('[ MAN ] moveLeft');
+        this.scale.x = -1;
+        if(this.body.velocity.x > -this.props.maxSpeed){
+            this.body.velocity.x -= this.props.acceleration;
+        };
+        this.states.move();
     }
     moveRight(){
         console.log('[MAN] moveRight');
+        this.scale.x = 1;
+        if(this.body.velocity.x < this.props.maxSpeed){
+            this.body.velocity.x += this.props.acceleration;
+        }
+        this.states.move();
     }
 };
 
