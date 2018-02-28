@@ -1,6 +1,10 @@
-class GameState extends Phaser.State {
-    constructor() {
-        super();
+import 'phaser';
+console.log('Phaser', Phaser)
+class GameState extends Phaser.Scene {
+    constructor(key) {
+        super({
+            key: key
+        });
         this.EVENTS = {};
         this.KEYS = {};
     }

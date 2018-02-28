@@ -2,7 +2,9 @@ import GameState from './gamestate';
 
 class Boot extends GameState {
     constructor() {
-        super();
+        super({
+            key: 'Boot'
+        });
     }
     init(config){
         console.log('[BOOT] init', config);

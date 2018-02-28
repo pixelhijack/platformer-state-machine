@@ -1,9 +1,6 @@
+import 'phaser';
 import StateMachine from 'javascript-state-machine';
 
-import Boot from './boot';
-import Menu from './menu';
-import Game from './game';
-import GameOver from './gameover';
 import GameState from './gamestate';
 import ExtendedSprite from './extendedsprite';
 import config from './config';
@@ -19,12 +16,7 @@ const events = [
     }
 ];
 
-const game = new Phaser.Game(
-    config.width,
-    config.height,
-    Phaser.AUTO,
-    config.domElement
-);
+const game = new Phaser.Game(config);
 
 const store = new StateMachine({
     init: 'boot',
@@ -93,11 +85,7 @@ const store = new StateMachine({
         },
         onInitialize: (lifecycle, config) => {
             console.log('[STATE] onInitialize', lifecycle, config);
-            game.state.add('Boot', Boot);
-            game.state.add('Menu', Menu);
-            game.state.add('Game', Game);
-            game.state.add('GameOver', GameState);
-            game.state.start('Menu', true, true, {
+            game.scene.start('Menu', true, true, {
                 config: config,
                 keyboardEvents: {
                     'SPACE': 'GAME:START'

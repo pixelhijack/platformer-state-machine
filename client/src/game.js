@@ -4,7 +4,7 @@ import creatureConfig from './creatureconfig';
 
 class Game extends GameState {
     constructor() {
-        super();
+        super('Game');
         this.ENTITIES = {/*
             'bear': [],
             'dino': []

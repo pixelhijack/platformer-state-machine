@@ -2,7 +2,7 @@ import GameState from './gamestate';
 
 class Menu extends GameState {
     constructor() {
-        super();
+        super('Menu');
     }
     preload(){
         console.log('[MENU] preload');

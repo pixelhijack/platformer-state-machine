@@ -1,6 +1,6 @@
 import StateMachine from 'javascript-state-machine';
 
-class ExtendedSprite extends Phaser.Sprite {
+class ExtendedSprite extends Phaser.GameObjects.Sprite {
     constructor(game, x, y, sprite, props) {
         super(game, x, y, sprite);
         this.props = props || { animations: [] };
