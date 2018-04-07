@@ -1,4 +1,4 @@
-// config per level = Phaser2 GameState
+// serializable config per level = Phaser2 GameState
 const config = {
     game: {
         width: 546,
@@ -9,11 +9,22 @@ const config = {
     levels: [
         {
             key: 'menu',
-            exit: 'level 1'
+            exit: 'level 1',
+            keyboard: {
+                '*': 'LEVEL:NEXT',
+                'SPACE': 'PLAYER:HIT'
+            }
         },
         {
             key: 'level 1',
-            exit: 'level 2'
+            exit: 'level 2',
+            keyboard: {
+                'SPACE': 'PLAYER:HIT',
+                'ARROWUP': 'PLAYER:JUMP',
+                'ARROWDOWN': 'PLAYER:DUCK',
+                'ARROWLEFT': 'PLAYER:LEFT',
+                'ARROWRIGHT': 'PLAYER:RIGHT'
+            }
         },
         {
             key: 'level 2',
@@ -26,21 +37,85 @@ const config = {
     ]
 };
 
-class GameState extends Phaser.State {
-    constructor(config) {
-        super();
+const events = [
+    {
+        type: 'LEVEL:NEXT',
+        action: ({state, game, e}) => {
+            game.state.start('level 1');
+        }
+    },{
+        type: 'PLAYER:HIT',
+        action: (payload) => {
+            console.log('[ EVENT ] ', payload);
+        }
     }
-    init(config){
-        console.log('[ GAMESTATE ] init', config);
+];
+
+class GameState extends Phaser.State {
+    constructor(key, config) {
+        super();
+        this.config = {
+            game: config.game,
+            level: config.levels.find(level => level.key === key),
+            events: events
+        };
+        this.EVENTS = {};
+        this.KEYS = {};
+        this.STATE = {};
+    }
+    init(adHocConfig){
+        console.log('[ GAMESTATE ] %s init', this.config.level.key, adHocConfig);
     }
     preload(){
-        console.log('[ GAMESTATE ] preload');
+        console.log('[ GAMESTATE ] %s preload', this.config.level.key);
     }
     create(){
-        console.log('[ GAMESTATE ] create');
+        console.log('[ GAMESTATE ] %s create', this.config.level.key);
+        // subscribe events
+        this.config.events.forEach(event => {
+            this.subscribe(event.type, event.action);
+        });
+
+        // setup keyboard events
+        this.KEYS = this.config.level.keyboard;
+        this.game.input.keyboard.onDownCallback = (e) => {
+            const payload = { 
+                e: e, 
+                game: this.game,
+                state: this.STATE
+            };
+            // 1. any key pressed: 
+            this.KEYS['*'] &&
+            this.dispatch(this.KEYS['*'], payload);
+            
+            // 2. single key pressed: 
+            this.KEYS[e.code.toUpperCase()] &&
+            this.dispatch(this.KEYS[e.code.toUpperCase()], payload);
+
+            // 3. combo keys pressed
+            // WIP
+        };
     }
     update(){
-        console.log('[ GAMESTATE ] update');
+        console.log('[ GAMESTATE ] %s update', this.config.level.key);
+    }
+
+    subscribe(type, action, priority, args){
+        if(!this.EVENTS[type]){
+            this.EVENTS[type] = new Phaser.Signal();
+        };
+        this.EVENTS[type].add(action, this, priority, args);
+    }
+    dispatch(type, args){
+        if(this.EVENTS[type]){
+            this.EVENTS[type].dispatch(args);
+            console.log('[ EVENTS ] %s dispatched', type, args);
+        } else {
+            console.warn('[ GameState.dispatch ] %s event fired, missing a handler!', type);
+        };
+    }
+    nextLevel(data) {
+        this.game.state.start(this.config.level.exit, true, true, data);
     }
 };
 
@@ -52,10 +127,10 @@ const game = new Phaser.Game(
 );
 
 const levels = config.levels.map(
-    level => game.state.add(level.key, new GameState(config))
+    level => game.state.add(level.key, new GameState(level.key, config))
 );
 
-game.state.start('menu', true, true, config);
+game.state.start('menu', true, true, { someData: 'state from previous level' });
 
 
 /////////////////////////////////////////////

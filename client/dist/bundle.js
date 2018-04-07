@@ -57,7 +57,7 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	// config per level = Phaser2 GameState
+	// serializable config per level = Phaser2 GameState
 	var config = {
 	    game: {
 	        width: 546,
@@ -67,10 +67,21 @@
 	    },
 	    levels: [{
 	        key: 'menu',
-	        exit: 'level 1'
+	        exit: 'level 1',
+	        keyboard: {
+	            '*': 'LEVEL:NEXT',
+	            'SPACE': 'PLAYER:HIT'
+	        }
 	    }, {
 	        key: 'level 1',
-	        exit: 'level 2'
+	        exit: 'level 2',
+	        keyboard: {
+	            'SPACE': 'PLAYER:HIT',
+	            'ARROWUP': 'PLAYER:JUMP',
+	            'ARROWDOWN': 'PLAYER:DUCK',
+	            'ARROWLEFT': 'PLAYER:LEFT',
+	            'ARROWRIGHT': 'PLAYER:RIGHT'
+	        }
 	    }, {
 	        key: 'level 2',
 	        exit: 'level 3'
@@ -80,34 +91,109 @@
 	    }]
 	};
 	
+	var events = [{
+	    type: 'LEVEL:NEXT',
+	    action: function action(_ref) {
+	        var state = _ref.state,
+	            game = _ref.game,
+	            e = _ref.e;
+	
+	        game.state.start('level 1');
+	    }
+	}, {
+	    type: 'PLAYER:HIT',
+	    action: function action(payload) {
+	        console.log('[ EVENT ] ', payload);
+	    }
+	}];
+	
 	var GameState = function (_Phaser$State) {
 	    _inherits(GameState, _Phaser$State);
 	
-	    function GameState(config) {
+	    function GameState(key, config) {
 	        _classCallCheck(this, GameState);
 	
-	        return _possibleConstructorReturn(this, (GameState.__proto__ || Object.getPrototypeOf(GameState)).call(this));
+	        var _this = _possibleConstructorReturn(this, (GameState.__proto__ || Object.getPrototypeOf(GameState)).call(this));
+	
+	        _this.config = {
+	            game: config.game,
+	            level: config.levels.find(function (level) {
+	                return level.key === key;
+	            }),
+	            events: events
+	        };
+	        _this.EVENTS = {};
+	        _this.KEYS = {};
+	        _this.STATE = {};
+	        return _this;
 	    }
 	
 	    _createClass(GameState, [{
 	        key: 'init',
-	        value: function init(config) {
-	            console.log('[ GAMESTATE ] init', config);
+	        value: function init(adHocConfig) {
+	            console.log('[ GAMESTATE ] %s init', this.config.level.key, adHocConfig);
 	        }
 	    }, {
 	        key: 'preload',
 	        value: function preload() {
-	            console.log('[ GAMESTATE ] preload');
+	            console.log('[ GAMESTATE ] %s preload', this.config.level.key);
 	        }
 	    }, {
 	        key: 'create',
 	        value: function create() {
-	            console.log('[ GAMESTATE ] create');
+	            var _this2 = this;
+	
+	            console.log('[ GAMESTATE ] %s create', this.config.level.key);
+	            // subscribe events
+	            this.config.events.forEach(function (event) {
+	                _this2.subscribe(event.type, event.action);
+	            });
+	
+	            // setup keyboard events
+	            this.KEYS = this.config.level.keyboard;
+	            this.game.input.keyboard.onDownCallback = function (e) {
+	                var payload = {
+	                    e: e,
+	                    game: _this2.game,
+	                    state: _this2.STATE
+	                };
+	                // 1. any key pressed: 
+	                _this2.KEYS['*'] && _this2.dispatch(_this2.KEYS['*'], payload);
+	
+	                // 2. single key pressed: 
+	                _this2.KEYS[e.code.toUpperCase()] && _this2.dispatch(_this2.KEYS[e.code.toUpperCase()], payload);
+	
+	                // 3. combo keys pressed
+	                // WIP
+	            };
 	        }
 	    }, {
 	        key: 'update',
 	        value: function update() {
-	            console.log('[ GAMESTATE ] update');
+	            console.log('[ GAMESTATE ] %s update', this.config.level.key);
+	        }
+	    }, {
+	        key: 'subscribe',
+	        value: function subscribe(type, action, priority, args) {
+	            if (!this.EVENTS[type]) {
+	                this.EVENTS[type] = new Phaser.Signal();
+	            };
+	            this.EVENTS[type].add(action, this, priority, args);
+	        }
+	    }, {
+	        key: 'dispatch',
+	        value: function dispatch(type, args) {
+	            if (this.EVENTS[type]) {
+	                this.EVENTS[type].dispatch(args);
+	                console.log('[ EVENTS ] %s dispatched', type, args);
+	            } else {
+	                console.warn('[ GameState.dispatch ] %s event fired, missing a handler!', type);
+	            };
+	        }
+	    }, {
+	        key: 'nextLevel',
+	        value: function nextLevel(data) {
+	            this.game.state.start(this.config.level.exit, true, true, data);
 	        }
 	    }]);
 	
@@ -119,10 +205,10 @@
 	var game = new Phaser.Game(config.game.width, config.game.height, Phaser.AUTO, config.game.domElement);
 	
 	var levels = config.levels.map(function (level) {
-	    return game.state.add(level.key, new GameState(config));
+	    return game.state.add(level.key, new GameState(level.key, config));
 	});
 	
-	game.state.start('menu', true, true, config);
+	game.state.start('menu', true, true, { someData: 'state from previous level' });
 	
 	/////////////////////////////////////////////
 	/*
