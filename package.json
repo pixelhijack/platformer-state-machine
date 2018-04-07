@@ -6,7 +6,7 @@
   "dependencies": {
     "express": "^4.14.0",
     "javascript-state-machine": "^3.0.1",
-    "phaser": "^3.1.2"
+    "phaser": "^3.3.0"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",

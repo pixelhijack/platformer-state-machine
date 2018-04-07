@@ -1,5 +1,5 @@
 import 'phaser';
-console.log('Phaser', Phaser)
+
 class GameState extends Phaser.Scene {
     constructor(key) {
         super({
