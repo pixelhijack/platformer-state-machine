@@ -1,3 +1,65 @@
+// config per level = Phaser2 GameState
+const config = {
+    game: {
+        width: 546,
+        height: 368,
+        blocks: 3,
+        domElement: 'game'
+    }, 
+    levels: [
+        {
+            key: 'menu',
+            exit: 'level 1'
+        },
+        {
+            key: 'level 1',
+            exit: 'level 2'
+        },
+        {
+            key: 'level 2',
+            exit: 'level 3'
+        },
+        {
+            key: 'game over',
+            exit: 'menu'
+        }
+    ]
+};
+
+class GameState extends Phaser.State {
+    constructor(config) {
+        super();
+    }
+    init(config){
+        console.log('[ GAMESTATE ] init', config);
+    }
+    preload(){
+        console.log('[ GAMESTATE ] preload');
+    }
+    create(){
+        console.log('[ GAMESTATE ] create');
+    }
+    update(){
+        console.log('[ GAMESTATE ] update');
+    }
+};
+
+const game = new Phaser.Game(
+    config.game.width,
+    config.game.height,
+    Phaser.AUTO,
+    config.game.domElement
+);
+
+const levels = config.levels.map(
+    level => game.state.add(level.key, new GameState(config))
+);
+
+game.state.start('menu', true, true, config);
+
+
+/////////////////////////////////////////////
+/*
 import StateMachine from 'javascript-state-machine';
 
 import Boot from './boot';
@@ -18,13 +80,6 @@ const events = [
 
     }
 ];
-
-const game = new Phaser.Game(
-    config.width,
-    config.height,
-    Phaser.AUTO,
-    config.domElement
-);
 
 const store = new StateMachine({
     init: 'boot',
@@ -111,3 +166,4 @@ const store = new StateMachine({
 });
 
 store.initialize(config);
+*/

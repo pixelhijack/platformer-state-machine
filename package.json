@@ -12,12 +12,14 @@
     "babel-core": "^6.26.0",
     "babel-loader": "^6.0.0",
     "babel-preset-es2015": "^6.24.1",
+    "concurrently": "^3.5.1",
     "webpack": "^1.13.2"
   },
   "scripts": {
     "babel": "babel --presets es2015 src/index.js -o dist/bundle.js",
     "build": "webpack --colors --progress --watch -d",
-    "server": "node server.js"
+    "server": "node server.js",
+    "dev": "concurrently --kill-others \"node server.js\" \"webpack --colors --progress --watch -d\""
   },
   "author": "",
   "license": "ISC"
